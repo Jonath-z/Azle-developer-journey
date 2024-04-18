@@ -13,12 +13,12 @@ The developer journey is designed to give both new and existing developers a cle
 
 ## Level 0: Pre-flight operations
 
-- **[1. Overview of the Internet Computer](/docs/current/tutorials/developer-journey/level-0/ic-overview)**
-- **[2. Internet Computer terminology](/docs/current/tutorials/developer-journey/level-0/ic-terms)**
-- **[3. Developer environment setup](/docs/current/tutorials/developer-journey/level-0/dev-env)**
-- **[4. Introduction to canisters](/docs/current/tutorials/developer-journey/level-0/intro-canisters)**
-- **[5. Introduction to languages](/docs/current/tutorials/developer-journey/level-0/intro-languages)**
-- **[6. Introduction to dfx](/docs/current/tutorials/developer-journey/level-0/intro-dfx)**
+- **[1. Overview of the Internet Computer](/)**
+- **[2. Internet Computer terminology](/)**
+- **[3. Developer environment setup](/)**
+- **[4. Introduction to canisters](/)**
+- **[5. Introduction to languages](/)**
+- **[6. Introduction to dfx](/)**
 
 ## Azle level 1: Advanced Canister Development
 
