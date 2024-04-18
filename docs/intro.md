@@ -1,47 +1,53 @@
 ---
 sidebar_position: 1
+keywords: [tutorial, developer journey]
 ---
 
-# Tutorial Intro
+# Welcome to Azle developer journey
 
-Let's discover **Docusaurus in less than 5 minutes**.
+## Overview
 
-## Getting Started
+Are you ready to get started developing on the Internet Computer using JavaScript/TypeScript, but not sure where to begin?
 
-Get started by **creating a new site**.
+The developer journey is designed to give both new and existing developers a clear learning path to develop on the Internet Computer. Starting at level 0 with an introduction to the Internet Computer, terminology, and setting up a developer environment, to level 4 that details building complex dapps, the Developer Journey contains essential information for developers of all skill levels.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+## Level 0: Pre-flight operations
 
-### What you'll need
+- **[1. Overview of the Internet Computer](/docs/current/tutorials/developer-journey/level-0/ic-overview)**
+- **[2. Internet Computer terminology](/docs/current/tutorials/developer-journey/level-0/ic-terms)**
+- **[3. Developer environment setup](/docs/current/tutorials/developer-journey/level-0/dev-env)**
+- **[4. Introduction to canisters](/docs/current/tutorials/developer-journey/level-0/intro-canisters)**
+- **[5. Introduction to languages](/docs/current/tutorials/developer-journey/level-0/intro-languages)**
+- **[6. Introduction to dfx](/docs/current/tutorials/developer-journey/level-0/intro-dfx)**
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+## Azle level 1: Advanced Canister Development
 
-## Generate a new site
+- **[1. Canister Upgrades, Storage, and Persistence:](/)** Learn how to manage and upgrade canisters, and handle data storage and persistence on the Internet Computer.
+- **[2. Advanced Canister Calls:](/)** Delve into complex interactions between canisters, including multi-canister operations and error handling.
+- **[3. Third-Party Canisters:](/)** Understand the use and integration of third-party canisters to extend the functionality of your applications.
+- **[4. Candid Interface Definition:](/)** An introduction to Candid, the interface description language for the Internet Computer.
+- **[5. Comprehensive Testing Strategies:](/)** Master unit, integration, and end-to-end testing to ensure robustness and reliability of your applications.
 
-Generate a new Docusaurus site using the **classic template**.
+## Azle level 2: Advanced Integration and Security
 
-The classic template will automatically be added to your project after you run the command:
+- **[1. Azle Package Managers:](/)** Explore package management in Azle to efficiently manage project dependencies.
+- **[2. HTTPS Outcalls:](/)** Implement HTTPS outcalls to interact with external services and APIs.
+- **[3. Managing Certified Data:](/)** Learn about certified data and how to ensure data authenticity and integrity.
+- **[4. Agent Interfaces:](/)** Introduction to agents in the Internet Computer environment and their role in application interactions.
+- **[5. Identities and Authentication:](/)** Implementing authentication mechanisms and managing identities within your applications.
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+## Azle level 3: Governance and Financial Operations
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+- **[1. ICP Ledger Operations:](/)** Learn to interact with the ICP ledger for managing tokens and transactions.
+- **[2. Implementing ICRC-1 Tokens:](/)** Understand the framework and deployment of ICRC-1 tokens on the Internet Computer.
+- **[3. Integration with Bitcoin:](/)** Explore the ckBTC and other Bitcoin integration tools within the Internet Computer.
+- **[4. NNS Governance and Staking:](/)** Master the nuances of network governance and the staking process in the NNS.
+- **[5. Using Quill for Transaction Management:](/)** Get hands-on experience with Quill to manage ICP transactions and staking.
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+## Azle level 4: Building Decentralized Applications (DApps)
 
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+- **[1. Encrypted Notes DApp with VetKeys:](/)** Build an encrypted notes application using the vetKeys library.
+- **[2. Ethereum Integration DApp Development:](/)** Develop a decentralized application utilizing the ICP-Ethereum integration.
+- **[3. Decentralized Token Swap Implementation:](/)** Create and launch a decentralized token swapping platform.
+- **[4. NFT Development on ICP:](/)** Learn the process of creating and managing Non-Fungible Tokens (NFTs) on the Internet Computer.
+- **[5. Auction DApp Creation:](/)** Design and develop a decentralized auction platform using the Internet Computer.
