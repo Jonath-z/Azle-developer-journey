@@ -17,8 +17,7 @@ The developer journey is designed to give both new and existing developers a cle
 - **[2. Internet Computer terminology](/)**
 - **[3. Developer environment setup](/)**
 - **[4. Introduction to canisters](/)**
-- **[5. Introduction to languages](/)**
-- **[6. Introduction to dfx](/)**
+- **[5. Introduction to dfx](/)**
 
 ## Azle level 1: Advanced Canister Development
 
