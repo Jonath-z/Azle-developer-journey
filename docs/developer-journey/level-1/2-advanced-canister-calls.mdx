@@ -1,0 +1,344 @@
+---
+keywords:
+  [
+    intermediate,
+    tutorial,
+    developer journey,
+    advanced canister calls,
+    query calls,
+    upgrade calls,
+  ]
+---
+
+# 2. Advanced canister calls
+
+In the previous tutorial where you [created your first dapp](/docs/current/tutorials/developer-journey/level-1/1.3-first-dapp), the developer journey briefly discussed query and update canister calls. In this tutorial, you'll dive deeper into these types of canister calls, but also take a look at advanced canister calls such as composite queries, certified variables, and inter-canister calls.
+
+Let's first define the different types of canister calls and how they differ from one another:
+
+- **Query calls** are executed on a single node within a subnet. Query calls do not alter the state of a canister. They are executed synchronously and answered immediately once received.
+
+- **Update calls** are able to alter the canister's state. They are executed on all nodes of a subnet, since the result must go through the subnet's consensus process. Update calls are submitted and answered asynchronously.
+
+- **Composite queries** are query calls that can call other queries (on the same subnet). They can only be invoked via ingress messages using `dfx` or through an agent such as a browser front-end, and not by other canisters.
+
+- **Certified variables** are verifiable pieces of data that have an associated certificate that proves the data's authenticity. Certified variables are set using an update call, then read using a query call.
+
+- **Atomic transactions** refer to the execution of message handlers, which are done in isolation from one another.
+
+- **Inter-canister calls** are used to make calls between different canisters.
+
+## The ICP execution model
+
+To understand how different types of canister calls play a role on ICP, first let's take a look at ICP's execution model and how it is structured.
+
+At a high level, a canister is used to expose **methods**. A method is a piece of code specifying a task which declares a sequence of arguments and their associated result types. Methods return a response to the caller. Query calls, update calls, and other types of canister calls are used to call those methods to get a response.
+
+A single method can consist of multiple **message handlers**. A message handler is a piece of code that can change the canister's state by taking a message, such as a request or a response, and produces either a response or another request. Typically, message handlers are separated in code by the `await` keyword, which indicates that one message handler is to be executed at one time. That's because message handlers are executed **atomically**, or in isolation from one another. These are referred to as **atomic transactions**. No two message handlers within the same canister can be running at the same time. When a message handler starts executing, it receives exclusive access to the canister's memory until it finishes its execution. While no two message handlers can execute at the same time, two **methods** can execute at the same time.
+
+Want to take a deeper dive? Check out this [blog post](https://mynosefroze.com/blog/2023-08-09-tla_for_canisters) for an in-depth look at the ICP execution model.
+
+## Canister query calls
+
+Query calls are used to query the current state of a canister or make a call to a method that operates on the canister's state. Query calls do not make any changes to the canister's state, making them 'read-only' operations. Query calls can be made to any node that holds the canister, since the result does not go through consensus. When a query call is submitted, it is executed synchronously and answered as soon as it is received by the node. Query calls can also be used to retrieve data that is stored in a canister's [stable memory](/docs/current/tutorials/developer-journey/level-2/2.1-storage-persistence).
+
+Query calls return results faster than update calls. Setting functions as query functions where appropriate can be an effective way to improve application performance. When designing your dapp, it is important to notice where query calls can be used in place of functions that perform queries. However, compared to update calls, the trade-off of a query call's increased performance is decreased security, since queries do not go through consensus and are not reflected in the transactions of the blockchain.
+
+The amount of security your dapp needs depends on your dapp's use case and functionality. For example, a blog dapp that uses a function to retrieve articles matching a tag doesn't need to have requests go through consensus and can benefit from using query calls. In contrast, a dapp that retrieves sensitive information, such as financial data, would greatly benefit from increased security and validation that the query result is accurate and secure. To return query results that are validated and secure, ICP supports **certified variables**, which you'll dive deeper into in a future module, [3.3: Certified variables](/docs/current/tutorials/developer-journey/level-3/3.3-certified-data).
+
+### Example `query` call
+
+Queries are defined by the `query` method or a `get` request in Azle code. Below is a simple query call, it queries the canister's state without making any changes.
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs>
+<TabItem value="v0.20.0" label="azle v0.20.0 or newer" default>
+
+```ts
+import express, { Request } from "express";
+
+let greetings = "hello world";
+
+const app = express();
+
+app.get("/", (_req, res) => {
+  res.send(greetings);
+});
+
+app.listen();
+```
+
+</TabItem>
+<TabItem value="v0.18.0" label="azle v0.18.0 or older">
+
+```ts
+import { Canister, query, text } from "azle";
+
+let greetings = "hello world";
+
+export default Canister({
+  greet: query([], text, () => {
+    return greetings;
+  }),
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Canister update calls
+
+Update calls are used to alter the state of the canister. Any changes made with an update call are persisted. Update calls are submitted to all nodes on a subnet. This is because update calls must go through consensus on the subnet to return the result of the call. Since update calls must go through consensus, they are answered asynchronously.
+
+In comparison to query calls, update calls have the opposite trade-off of performance and security: they have a higher security level since two-thirds of the replicas in a subnet must agree on the result, but the returning result takes longer since the consensus process must be completed before the result can be returned.
+
+### Example update call
+
+Update calls are defined with a `update` method or any other http request in Azle. Below is a simple update call that updates the `message` and returns the new message.
+
+<Tabs>
+<TabItem value="v0.20.0" label="azle v0.20.0 or newer" default> 
+```ts
+import express, { Request } from 'express';
+
+let message = ""
+
+const app = express();
+
+app.use(express.json());
+
+app.post('/update', (req: Request<any, any, typeof message>, res) => {
+message = req.body.message;
+res.send(message);
+});
+
+app.listen();
+
+````
+</TabItem>
+<TabItem value="v0.18.0" label="azle v0.18.0 or newer">
+```ts
+import { Canister, query, text, update } from 'azle';
+
+let message = '';
+
+export default Canister({
+    setMessage: update([text], text, (newMessage) => {
+        message = newMessage;
+        return message
+    })
+});
+````
+
+</TabItem>
+</Tabs>
+
+## Certified variables
+
+Since query calls do not go through consensus, their response cannot be validated as being accurate or secure. To remedy this, certified variables can be used. Certified variables enable queries to return an authenticated response that can be verified and trusted.
+
+Certified variables utilize **chain-key cryptography** to generate digital signatures that can then be validated using a single, permanent public key that belongs to ICP. This is a bit different from traditional signatures, since the private key never exists in a single location; it is constantly distributed between many different nodes. Valid signatures can only be generated when the majority of the nodes storing the pieces of the private key cooperate in a cryptographic protocol. Through this method, an application can immediately validate all data that is covered by the certified variable without having to put trust into the particular node that it received the query response from.
+
+Certification happens at the canister level. The certified variable of a canister can be set during an update call. Recall that an update call changes the canister's state and goes through consensus. When the certified variable is set, the certification can then be read in future query calls and return the certified variable in response to the query call in a trustworthy and secure manner.
+
+You'll dive deeper into certified variables in a future module, [3.3: Certified variables](/docs/current/tutorials/developer-journey/level-3/3.3-certified-data).
+
+## Composite queries
+
+A composite query call is a type of query that can only be invoked via an ingress message, such as one generated by an agent in a web browser, or through `dfx`. Composite queries allow a canister to call a query method of another canister using an ingress query.
+
+For example, imagine a project has one index canister and several storage canisters, with each storage canister representing a partition of the key-value stores. If a call is made that asks for a value from one of the storage canisters, composite queries allow the index canister to fetch the information from the correct canister. Without composite queries, the client would need to first query the index canister to get information about which storage canister they should call, then make a call to that canister directly themselves.
+
+:::info
+Composite queries are supported in `dfx` versions `v0.15.0 and newer`.
+:::
+
+If you want to dive a bit deeper, you can read more on the [developer blog](https://internetcomputer.org/blog/features/composite-query) or you can take a look at the [Azle example project using composite queries](https://github.com/demergent-labs/azle/tree/main/examples/composite_queries).
+
+## Inter-canister calls
+
+Inter-canister calls refer to the ability to make calls between different canisters. This functionality is crucial for developers building complex dapps, as it enables you to benefit from using third-party canisters in your project, or reusing a dedicated functionality for several different services.
+
+For example, consider a scenario where you want to create a social media dapp that includes functionality for organizing events, and making posts. The dapp might include social profiles for each user. When creating this dapp, you may create a single canister for storing these social profiles, then another canister that addresses event organization, and a third canister that handles social posts. By isolating the social profiles into one canister, you can create endless canisters that make calls to the social profile canister, allowing your dapp to continue to scale.
+
+### Using inter-canister calls
+
+To demonstrate this inter-canister call functionality, you're going to use an example known as a 'PubSub'. In this example, you have two canisters: a **publisher** and a **subscriber**. In this setup, the 'Subscriber' canister sends an inter-canister call to the 'Publisher' canister that indicates it would like to subscribe to a 'topic', which is a key-value pair in this example of type '`Text`: `Nat`'. Then, the 'Publisher' canister can publish information to that topic, in this example the value associated with the topic's key. Let's take a closer look.
+
+### Prerequisites
+
+Before you start, verify that you have set up your developer environment according to the instructions in [0.3 Developer environment setup](/docs/current/tutorials/developer-journey/level-0/dev-env).
+
+### Creating a new project
+
+To get started, you'll be cloning the DFINITY example repo which contains this tutorial's example, plus several others. you'll be using the `motoko/pub-sub` folder. Open a terminal window, navigate into your working directory (`developer_journey`), then use the commands:
+
+```bash
+dfx start --clean --background
+git clone https://github.com/dfinity/examples/
+cd examples/motoko/pub-sub
+```
+
+Let's take a look at the project's files:
+
+```bash
+cross_canister_calls_/
+├── .gitignore
+├── dfx.json
+├── package.json
+├── README.md
+├── tsconfig.json
+└── src/
+    ├── canister1/
+    │   ├── index.ts
+    │   └── canister1.did
+    └── canister2/
+        ├── index.ts
+        └── canister2.did
+```
+
+### Writing Your First Canister: `Canister 1`
+
+You'll notice that this project structure is a bit different from the ones you've used thus far in our developer journey. Since this project uses two backend canisters for it's functionality, there aren't `src` folders for a backend or frontend canister, just two folders for each backend canister.
+
+<Tabs>
+<TabItem value="v0.18.0" label="azle v0.18.0 or older" default>
+```typescript
+import {
+  update,
+  Canister,
+  query,
+  text,
+  Record,
+  Vec,
+  Result,
+  Ok,
+  Err,
+} from "azle";
+
+const User = Record({
+  id: text,
+  name: text,
+  lastName: text,
+});
+
+let users: Vec<typeof User> = [];
+```
+
+- **Imports**: The code starts by importing various functions and types from the Azle framework, such as `update`, `Canister`, `query`, `text`, `Record`, `Vec`, `Result`, `Ok`, and `Err`. These are used to define canister interfaces, data types, and query/update methods.
+- **User Type Definition**: A `User` type is defined using the `Record` function from Azle, which represents a record with `id`, `name`, and `lastName` fields, all of which are strings (`text`).
+- **Users Array**: An array named `users` is initialized to store user records. It uses the `Vec` type from Azle to indicate it's a vector (dynamic array) that will contain elements of the `User` type.
+
+```typescript
+export default Canister({
+  getUsers: query([], Vec(User), () => {
+    return users;
+  }),
+
+  register: update([User], text, (user) => {
+    users.push(user);
+    return "user Successfully added";
+  }),
+
+  getUser: query([text], Result(User, text), (userid) => {
+    const user = users.find((user) => user.id === userid);
+    if (!user) return Err("user not found");
+    return Ok(user);
+  }),
+});
+```
+
+- **Canister Definition**: The `Canister` function is used to define the canister's interface, including its query and update methods.
+  - **getUsers**: A query method that returns the list of users. Being a query, it does not modify the canister's state and is expected to execute quickly.
+  - **register**: An update method that takes a `User` record as input, adds it to the `users` array, and returns a confirmation message. Update methods can modify the canister's state and are processed asynchronously.
+  - **getUser**: A query method that takes a user `id` (text) as input and returns a user record if found. It uses the `Result` type to handle the possibility of an error (e.g., if the user is not found).
+
+
+### Writing your second canister: `Canister 2`
+
+```typescript
+import { Canister, text, Principal, ic, update } from "azle";
+import Canister1 from "../canister1";
+import { v4 as uuidv4 } from "uuid";
+```
+
+- **Imports**: The script begins by importing necessary functions and types from Azle, such as `Canister`, `text`, `Principal`, `ic`, and `update`. It also imports `Canister1` to interact with it and `uuidv4` from the `uuid` package to generate unique identifiers for new users.
+
+```typescript
+export default Canister({
+  createUser: update([text, text], text, async (firstName, lastName) => {
+    const canister1: typeof Canister1 = Canister1(
+      Principal.fromText(getCanister1Principal())
+    );
+
+    return await ic.call(canister1.register, {
+      args: [{ id: uuidv4(), name: firstName, lastName }],
+    });
+  }),
+});
+```
+
+- **Canister Definition**: This part of the code defines `canister2`'s interface using the `Canister` function from Azle. It specifies one method, `createUser`, which is an update method indicating it can modify the canister's state.
+
+- **createUser Method**: This method takes two strings as input (`firstName` and `lastName`) and returns a string. It's marked with `update`, meaning it's intended to change the state (in this case, by creating a new user).
+  
+  - Inside the method, it first constructs an instance of `Canister1` using its principal ID obtained from the `getCanister1Principal` function. This instance allows `canister2` to make calls to `canister1`.
+  
+  - It then makes an asynchronous call to `canister1`'s `register` method using `ic.call`. This call includes a new user object with a unique `id` generated by `uuidv4`, and the `firstName` and `lastName` provided as arguments to `createUser`.
+  
+  - The `await` keyword is used to wait for the call to complete, and the result of the call (a confirmation message from `canister1`) is returned.
+
+```typescript
+function getCanister1Principal(): string {
+  if (process.env.CANISTER_ID_CANISTER1 !== undefined) {
+    return process.env.CANISTER_ID_CANISTER1;
+  }
+
+  throw new Error(`process.env.CANISTER_ID_CANISTER1 is not defined`);
+}
+```
+
+- **getCanister1Principal Function**: This utility function fetches the principal ID of `canister1` from the environment variables. It's used to ensure that `canister2` knows which canister to call when creating a user. If the principal ID is not set in the environment variables, it throws an error.
+
+Overall, `canister2` is designed to interact with `canister1` by sending it requests to create new users. It demonstrates how to perform inter-canister calls on the ICP, leveraging environment variables for dynamic configuration and using asynchronous calls to interact with other canisters.
+
+Next, let's use the canisters and demonstrate their functionality. First, deploy the canisters with the command:
+
+```bash
+dfx deploy
+```
+
+Then, let's call the Subscriber canister to create and subscribe to the topic 'Astronauts'. You can do that with the command:
+
+```bash
+dfx canister call sub init '("Astronauts")'
+```
+
+Now, you can publish a value to be associated with the 'Astronauts' topic. Remember that the 'value' data type is defined as type `Nat`, so this value must be a number.
+
+```bash
+dfx canister call pub publish '(record { "topic" = "Astronauts"; "value" = 5 })'
+```
+
+To verify that the data for 'Astronauts' has been created and updated correctly, let's call the Subscriber canister and ask it to retrieve the 'value' from the Publisher canister:
+
+```bash
+dfx canister call sub getCount
+```
+
+The output should resemble the following:
+
+```bash
+(5 : nat)
+```
+</TabItem>
+</Tabs>
+
+
+## Next steps
+
+Next, let's dive into using third-party canisters
+
+- [2.3 Using third-party canisters](/docs/developer-journey/level-1/third-party-canisters)
