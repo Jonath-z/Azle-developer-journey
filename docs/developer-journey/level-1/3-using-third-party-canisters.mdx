@@ -1,5 +1,13 @@
 ---
-keywords: [intermediate, tutorial, developer journey, dfx deps, pullable canisters, third-party canisters]
+keywords:
+  [
+    intermediate,
+    tutorial,
+    developer journey,
+    dfx deps,
+    pullable canisters,
+    third-party canisters,
+  ]
 ---
 
 # 3. Using third-party canisters
@@ -22,13 +30,13 @@ Before you start, verify that you have set up your developer environment accordi
 
 To get started, create a new project in your working directory. Open a terminal window, navigate into your working directory (`developer_journey`), then use the commands:
 
-
 Use `npx azle new <project_name>` to create a new project and navigate into the project directory:
 
 ```bash
 npm install
 dfx start --clean --background
 ```
+
 Then, create a new project called dependencies and nagivate into the new project directory:
 
 ```bash
@@ -72,7 +80,6 @@ First, open the `dfx.json` file in your project's directory. You need to configu
     }
   }
 }
-
 ```
 
 Next, run the `dfx deps pull` command:
@@ -114,7 +121,6 @@ Next, you'll set the `init` arguments for the dependency canisters using the `df
 ```bash
 dfx deps init
 ```
-
 
 Now it's time to deploy our pulled dependency canister. Run the command:
 
@@ -168,4 +174,4 @@ out:
 
 Next, let's take a deeper dive into an introduction of Candid and the role that it plays in development on ICP.
 
-- [4 Introduction to Candid](/docs/developer-journey/level-1/intro-candid).
+- [4. Introduction to Candid](/docs/developer-journey/level-1/intro-candid).
