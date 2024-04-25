@@ -1,0 +1,219 @@
+---
+keywords:
+  [
+    intermediate,
+    tutorial,
+    developer journey,
+    unit testing,
+    e2e testing,
+    integration testing,
+  ]
+---
+
+# 5. Comprehensive Testing Strategies
+
+:::info
+Testing in Azle is not fully documented at present. In this section of the developer journey, we will guide you through the process of writing unit tests for a canister.
+:::
+
+Testing code is an important stage of any development workflow. Without proper testing before the code is put into production, bugs and errors that may have been caught during testing can be detrimental to production environments. At this point in of our developer journey, it's time to explore tools that can be used to test our code.
+
+There are three primary types of testing:
+
+- **Unit testing:** Tests individual functions and calculations to assure that they generate data or return the expected result; tests a single _unit_ at a time.
+
+- **Integration testing:** Tests several functions, calculations, and portions of the code together; tests how different parts _integrate_ with one another. A common form of integration testing is known as _continuous integration_ testing, or CI testing.
+
+- **End2end (e2e) testing:** Tests the app's complete workflow, including buttons, forms, and frontend assets; tests the app from _end to end_.
+
+## Azle unit testing
+
+The Azle testing contains three files used for unit testing.
+
+```sh
+|
+|__ pretest.ts
+|__ tests.ts
+|__ test.ts
+```
+Those files have the following purpose:
+
+- `pretest.ts`: This file contains the presets for the tests.
+
+- `tests.ts`: This file contains the tests.
+
+- `test.ts`: This file contains the test runner.
+
+Let's dive deeper into understanding the different files.
+
+### `pretest.ts` file
+The `pretest.ts` is mainly used to set up the testing environment by uninstalling the canister  and  installing a new version.
+
+```ts
+import { execSync } from "child_process";
+
+async function pretest() {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  execSync(`dfx canister uninstall-code testing_backend || true`, {
+    stdio: "inherit",
+  });
+
+  execSync(`dfx deploy`, {
+    stdio: "inherit",
+  });
+
+  execSync(`dfx generate testing_backend`, {
+    stdio: "inherit",
+  });
+}
+
+pretest();
+```
+This pretest file does the following:
+
+1. Waits for 5 seconds to ensure any prior processes have completed or to handle any delays.
+2. Uninstalls the existing canister if it exists. This ensures that each test starts with a clean state.
+3. Deploys the canister using the `dfx deploy` command, which compiles and installs the canister code.
+4. Generates necessary bindings or interfaces for the canister using `dfx generate`.
+ 
+:::info
+These steps are crucial for ensuring that the testing environment is correctly set up and that the canister is in the expected state before running any tests.
+:::
+
+### `tests.ts` file
+
+```ts
+import { ActorSubclass } from "@dfinity/agent";
+import { Test } from "azle/test";
+import { _SERVICE } from "../.dfx/local/canisters/testing_backend/service.did";
+
+export function get_tests(testing_backend: ActorSubclass<_SERVICE>): Test[] {
+  return [
+    {
+      name: "greet",
+      test: async () => {
+        const result = await testing_backend.greet("Alice");
+
+        return {
+          Ok: result === "Hello, Alice!",
+        };
+      },
+    },
+  ];
+}
+```
+This tests file code does the following:
+
+1. Import the `ActorSubclass` from `"@dfinity/agent"`: `ActorSubclass` is used for typing the actor that interacts with the canister, ensuring that method calls are type-safe.
+2. `Test` from `"azle/test"`: the Test type is used to define the structure of test cases.
+3. `_SERVICE` from the generated `"service.did"` file:  `_SERVICE` interface describes the canister's public interface, defining the methods that can be called on the canister
+4. `get_tests` function: This function returns an array of tests.
+
+`get_tests` function return an array with the `Test` structure, let's look at the `Test` structure:
+
+```ts
+type Test = {
+    name: string;
+    skip?: boolean;
+    wait?: number;
+    prep?: () => Promise<any>;
+    test?: () => Promise<AzleResult<boolean, string>>;
+}
+```
+
+1. `name`: is the name of the function to test.
+2. `skip`: is a boolean that indicates whether the test should be skipped.
+3. `wait`: is the number of milliseconds to wait before the test is run.
+4. `prep`: is a function that runs before the test.
+5. `test`: is the function that contains the code to test and return an assertion object with `Ok` or `Err` according the test result.
+
+### `test.ts` file
+
+The `test.ts` creates a testing actor for the canister canister and runs a suite of tests defined in a separate `tests.ts` file.
+
+```ts
+import { getCanisterId, runTests } from "azle/test";
+import { get_tests } from "./tests";
+import { createActor } from "../src/declarations/testing_backend";
+
+const tests = createActor(getCanisterId("testing_backend"), {
+  agentOptions: {
+    host: "http://localhost:45965/",
+  },
+});
+
+runTests(get_tests(tests));
+
+```
+This tests file code does the following:
+
+1. `createActor(...)`: This function call creates an actor for interacting with the testing_backend canister. 
+The actor uses the canister ID obtained from getCanisterId("testing_backend").
+2. `agentOptions`: This parameter specifies options for the agent managing the interaction between the client and the canister. 
+Here, host is set to `http://localhost:45965/`, indicating the replica's host address locally. 
+3. `runTests(...)`: This function call takes the array of tests returned by `get_tests` and runs them. 
+It manages the execution flow of each test, handling async operations and collecting results to provide a comprehensive report on the test outcomes.
+
+## Running Tests
+
+After setting up your project with the `npx azle new` command, the testing commands are already configured for your convenience. Before initiating the tests, it's essential to prepare your testing environment. You can do this in two ways:
+
+### Automated Pretest Setup
+To automatically set up the environment, run the following command:
+
+```sh
+npm run pretest
+```
+
+### Manual Pretest Setup
+Alternatively, if you prefer a manual setup, execute this command:
+
+```sh
+npx ts-node --transpile-only --ignore=false test/pretest.ts
+```
+
+### Running the Tests
+
+Once the pretest setup is complete, you can proceed to run the tests.
+
+#### Automated Test Execution
+To execute the tests using the predefined script, use:
+
+```sh
+npm run test
+```
+
+#### Manual Test Execution
+If you choose to run the tests manually, use the following command:
+
+```sh
+npx ts-node --transpile-only --ignore=false test/test.ts
+```
+
+This setup ensures that your testing environment is properly prepared, whether you prefer an automated or a manual approach.
+
+## Need help?
+
+Did you get stuck somewhere in this tutorial, or feel like you need additional
+help understanding some of the concepts? The ICP community has several resources
+available for developers, like working groups and bootcamps, along with our
+Discord community, forum, and events such as hackathons. Here are a few to check
+out:
+
+- [Developer Discord community](https://discord.com/invite/cA7y6ezyE2), which is
+  a large chatroom for ICP developers to ask questions, get help, or chat with
+  other developers asynchronously via text chat.
+
+- [Developer journey forum discussion](https://forum.dfinity.org/t/developer-journey-feedback-and-discussion/23893).
+
+- [Developer tooling working group](https://www.google.com/calendar/event?eid=MHY0cjBubmlnYXY1cTkzZzVzcmozb3ZjZm5fMjAyMzEwMDVUMTcwMDAwWiBjX2Nnb2VxOTE3cnBlYXA3dnNlM2lzMWhsMzEwQGc&ctz=Europe/Zurich).
+
+- [Weekly developer office hours](https://discord.gg/4a7SZzRk?event=1164114241893187655)
+  to ask questions, get clarification, and chat with other developers live via
+  voice chat. This is hosted on our
+  [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
+
+- Submit your feedback to the [ICP Developer feedback board](http://dx.internetcomputer.org).
+
+## Next steps

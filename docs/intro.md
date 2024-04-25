@@ -13,19 +13,18 @@ The developer journey is designed to give both new and existing developers a cle
 
 ## Level 0: Pre-flight operations
 
-- **[1. Overview of the Internet Computer](/)**
-- **[2. Internet Computer terminology](/)**
-- **[3. Developer environment setup](/)**
-- **[4. Introduction to canisters](/)**
-- **[5. Introduction to dfx](/)**
+- **[1. Overview of the Internet Computer](/docs/developer-journey/level-0/1-ic-overview.mdx)**
+- **[2. Internet Computer terminology](/docs/developer-journey/level-0/2-ic-terms.mdx)**
+- **[3. Developer environment setup](/docs/developer-journey/level-0/3-dev-env.mdx)**
+- **[4. Introduction to canisters](/docs/developer-journey/level-0/4-intro-canisters.mdx)**
 
 ## Azle level 1: Advanced Canister Development
 
-- **[1. Canister Upgrades, Storage, and Persistence:](/)** Learn how to manage and upgrade canisters, and handle data storage and persistence on the Internet Computer.
-- **[2. Advanced Canister Calls:](/)** Delve into complex interactions between canisters, including multi-canister operations and error handling.
-- **[3. Third-Party Canisters:](/)** Understand the use and integration of third-party canisters to extend the functionality of your applications.
-- **[4. Candid Interface Definition:](/)** An introduction to Candid, the interface description language for the Internet Computer.
-- **[5. Comprehensive Testing Strategies:](/)** Master unit, integration, and end-to-end testing to ensure robustness and reliability of your applications.
+- **[1. Canister Upgrades, Storage, and Persistence:](/docs/developer-journey/level-1/1-storage-persistance.mdx)** Learn how to manage and upgrade canisters, and handle data storage and persistence on the Internet Computer.
+- **[2. Advanced Canister Calls:](/docs/developer-journey/level-1/2-advanced-canister-calls.mdx)** Delve into complex interactions between canisters, including multi-canister operations and error handling.
+- **[3. Third-Party Canisters:](/docs/developer-journey/level-1/3-using-third-party-canisters.mdx)** Understand the use and integration of third-party canisters to extend the functionality of your applications.
+- **[4. Candid Interface Definition:](/docs/developer-journey/level-1/4-intro-candid.mdx)** An introduction to Candid, the interface description language for the Internet Computer.
+- **[5. Comprehensive Testing Strategies:](/docs/developer-journey/level-1/5-testing.mdx)** Master unit, integration, and end-to-end testing to ensure robustness and reliability of your applications.
 
 ## Azle level 2: Advanced Integration and Security
 
