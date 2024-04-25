@@ -1,0 +1,249 @@
+---
+keywords: [beginner, tutorial, developer journey, introduction, dfx]
+---
+
+# 5. Introduction to dfx
+
+`dfx` is a command line utility that is used to interact with the IC SDK. It is the primary tool that is used for creating, managing, and deploying dapps onto the Internet Computer.
+
+The `dfx` parent command has several flags and subcommands that can be used to perform a wide array of operations. First, you'll take a look at basic usage of the command, then you'll get started creating your first project using dfx.
+
+## Basic usage
+
+The syntax for using dfx is as follows:
+
+```bash
+dfx [subcommand] [flag]
+```
+
+### Subcommands
+
+The following is a list of the essential `dfx` subcommands that you'll be using throughout the developer journey series. For the full list of all possible subcommands, check out the [dfx reference documentation](https://internetcomputer.org/docs/current/developer-docs/developer-tools/cli-tools/cli-reference/dfx-parent).
+
+- `build`: Used to build the canister output from the project's source code.
+- `canister`: Used to manage deployed canisters.
+- `cycles`: Used to manage the cycles balance for your identity.
+- `deploy`: Deploys one or all canisters from the project's source code. By default, all canisters are deployed.
+- `help`: Returns usage information for a specific subcommand.
+- `identity`: Used to create and manage identities.
+- `info`: Used to display information, such as version or port values.
+- `ledger`: Used to interact with accounts within the ledger canister.
+- `new`: Used to create a new project. By default, creates a Motoko project.
+- `ping`: Used to test network connectivity to the mainnet or the local canister execution environment.
+- `quickstart`: Used to perform an initial one-time identity and wallet setup.
+- `start`: Used to start the local canister execution environment for the current project.
+- `stop`: Used to stop the local canister execution environment.
+- `upgrade`: Used to upgrade the version of dfx installed.
+
+### Flags
+
+- `-h`, `--help`: Used to display usage information.
+- `-q`, `--quiet`: Used to suppress informational messages.
+- `-v`, `--verbose`: Used to display detailed information about operations.
+- `-V`, `--version`: Used to display the version of dfx installed.
+
+### Options
+
+Below are the essential options that you'll be referencing throughout the developer journey. For the full list of options, see the [reference documentation](https://internetcomputer.org/docs/current/developer-docs/developer-tools/cli-tools/cli-reference/dfx-parent).
+
+- `--identity <identity>`: Used to specify the user identity to be used with the command.
+- `--logfile <logfile>`: Used to write the command's output logs to a specific file.
+
+## Upgrading to the latest version of dfx
+
+When a new version of `dfx` is released, it is recommended that the latest version be installed whenever possible. This ensures that you are benefiting from the latest features, enhancements, and fixes.
+
+To upgrade to the latest version, the `dfx upgrade` command can be used. This command will compare your current version of `dfx` to the latest version available, and if a new version is available, the command will automatically download and install the newest version.
+
+## Installing a specific version of dfx
+
+If there is a specific release of `dfx` you'd like to use, you can set the `DFX_VERSION` environment variable, then run the install script. The install script looks for this environment variable during installation to determine which version should be downloaded. If no variable is set, the latest version is downloaded.
+
+To set the `DFX_VERSION` variable and install a specific version of `dfx`, run the command:
+
+```bash
+DFX_VERSION=0.14.1 sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
+```
+
+## Creating a new project with dfx
+
+All dapps on ICP start off as **projects**. Projects are created using the `dfx` command and subcommands.
+
+To get started, you'll use the default sample app to demonstrate how to create a project and explore the default project structure that is generated when a new project is created.
+
+### Step 1: Open a terminal window on your local computer.
+
+Assure that you are in your working directory, `developer_journey`.
+
+### Step 2: Create a new project with the name 'hello_world' with the command:
+
+When no flags are used, the `dfx new` command will create a new project using the default Motoko template. To create a project using the Rust project template, the flag `--type=rust` should be included in the command.
+
+In this developer journey, you will be using TypeScript for our development language, so you don't need to start a new project with `dfx`, instead you can use the following command:
+
+```sh
+npx azle new hello_world
+```
+
+:::info
+The above command will start a new azle project with express structure
+:::
+
+:::tip
+With `dfx` 0.17.\* you can start a new with `dfx new hello_world` then select `TypeScript` template
+:::
+
+:::info
+When creating new projects with `dfx`, only alphanumeric characters and underscores should be used. This is to assure that project names are valid within Motoko, JavaScript, and other contexts.
+:::
+
+This command will create a new project directory called `hello_world` that contains the project's default template files and a new git repository for your project.
+
+### Step 3: Then, navigate into the project's directory with the command:
+
+```bash
+cd hello_world
+```
+
+## Exploring the default project structure with `npx azle new` command
+
+By default, the project structure will resemble the following:
+
+```bash
+hello_world/
+├── README.md      # Default project documentation
+├── dfx.json       # Project configuration file
+├── node_modules   # Libraries for frontend development
+├── package-lock.json
+├── package.json
+├── src            # Source files directory
+│   ├── backend
+│   │   └── index.ts
+│   │   └── index.
+│   ├── frontend
+│   │   ├── index.ts
+│   │   ├── index.html
+│   │
+│   │
+│   ├── test
+│       │── pretest.ts
+│       │── test.ts
+│       │── tests.ts
+│
+└── webpack.config.js
+```
+
+In this directory, the following files and directories are notable:
+
+- `README.md`: The default README file to be used for documenting your project.
+- `dfx.json`: The default configuration file used to set configurable options for your project.
+- `src/`: The source directory that contains all of your dapp's source files.
+- `hello_world_backend`: The source directory that contains your dapp's backend code files.
+- `hello_world_frontend`: The source directory that contains your dapp's frontend code files.
+- `hello_world_backend/main.mo`: The default template Motoko file that can be modified or replaced to include your dapp's core programming logic.
+
+## Reviewing the default configuration
+
+By default, the `dfx.json` file will contain some automatically generated configuration settings for your new project. These settings will provide basic functionality for the default dapp, which is a simple 'Hello, world' program.
+
+To review the default configuration file for the project, open the `dfx.json` file in a code or text editor. The contents will resemble the following:
+
+```json
+{
+  "canisters": {
+    "backend": {
+      "type": "custom",
+      "main": "src/backend/index.ts",
+      "candid": "src/backend/index.did",
+      "candid_gen": "http",
+      "build": "npx azle backend",
+      "wasm": ".azle/backend/backend.wasm",
+      "gzip": true,
+      "assets": [["src/frontend/dist", "dist"]],
+      "build_assets": "npm run build",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "path": "src/backend/index.did"
+        },
+        {
+          "name": "cdk:name",
+          "content": "azle"
+        }
+      ]
+    }
+  }
+}
+```
+
+Let's explore these settings a bit further:
+
+- There is canisters defined in this file; `backend`.
+- The `backend` canister has a `main` attribute which specifies the file path of the program's core file, `src/backend/index.ts`.
+- The `backend` canister has a `type` of 'custom', which specifies the programming language is TypeScript or other languages than Rust and Motoko.
+- Additional assets for the `backend` canister include the built `frontend` canister specified in the `assets` configuration.
+
+## Reviewing the default program code
+
+Now that you've explored the default project structure, let's take a look at the default program code located in the `index.ts` file. This is located in the `src/backend` directory. The developer journey will cover frontend development and the default files located in the frontend canister directory in a later tutorial.
+
+```typescript
+import express, { Request } from "express";
+
+let db = {
+  hello: "hello world",
+};
+
+const app = express();
+
+app.use(express.json());
+
+app.get("/db", (_req, res) => {
+  res.json(db);
+});
+
+app.post("/db/update", (req: Request<any, any, typeof db>, res) => {
+  db = req.body;
+
+  res.json(db);
+});
+
+app.use(express.static("/dist"));
+
+app.listen();
+```
+
+In this simple program, you're using the Express framework for building web applications in Node.js. Here's a breakdown of the code:
+
+- You import the express module, which is a popular web framework for Node.js, and the Request type from it.
+- You initialize a simple in-memory database (`db`) with a default value.
+  An Express application (`app`) is created.
+- You add middleware to parse JSON bodies (`express.json()`), which allows your application to handle JSON-encoded data.
+- You define two routes:
+  - **GET** `/db` returns the current state of the database (`db`) as a JSON response.
+  - **POST** `/db/update` updates the database (`db`) with the data sent in the request body and then returns the updated database.
+- You serve static files from the `/dist` directory using `express.static()`.
+- Finally, you start the Express server, listening on the default port.
+
+## Need help?
+
+Did you get stuck somewhere in this tutorial, or feel like you need additional
+help understanding some of the concepts? The ICP community has several resources
+available for developers, like working groups and bootcamps, along with our
+Discord community, forum, and events such as hackathons. Here are a few to check
+out:
+
+- [Developer Discord community](https://discord.com/invite/cA7y6ezyE2), which is
+  a large chatroom for ICP developers to ask questions, get help, or chat with
+  other developers asynchronously via text chat.
+
+- [Developer journey forum discussion](https://forum.dfinity.org/t/developer-journey-feedback-and-discussion/23893).
+
+- [Developer tooling working group](https://www.google.com/calendar/event?eid=MHY0cjBubmlnYXY1cTkzZzVzcmozb3ZjZm5fMjAyMzEwMDVUMTcwMDAwWiBjX2Nnb2VxOTE3cnBlYXA3dnNlM2lzMWhsMzEwQGc&ctz=Europe/Zurich).
+
+- [Weekly developer office hours](https://discord.gg/4a7SZzRk?event=1164114241893187655)
+  to ask questions, get clarification, and chat with other developers live via
+  voice chat. This is hosted on our
+  [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
+
+- Submit your feedback to the [ICP Developer feedback board](http://dx.internetcomputer.org).
