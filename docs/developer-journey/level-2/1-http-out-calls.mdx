@@ -1,0 +1,269 @@
+---
+keywords: [intermediate, tutorial, developer journey, https outcalls]
+---
+
+# 1. Using HTTPS outcalls
+
+In the past, blockchain networks were only able to communicate with external servers through blockchain oracles, or third-party entities that relayed calls from the blockchain to an external server, then routed the response back to the blockchain. This is because blockchains are a form of replicated state machine, where each replica must perform the same computations within the same state to make the same transitions each round. Since doing computations with results from an external source may lead to a state divergence, tools like oracles have been used in the past. However, on the Internet Computer, canisters can communicate directly with external servers or other blockchains through **HTTPS outcalls**.
+
+HTTPS outcalls are a feature of canisters on ICP that allow smart contracts to directly make calls to HTTPS servers that are external to ICP. The response of these HTTPS calls can then be used by the smart contract in a way that the replica can safely be updated using the response without the risk of a state divergence.
+
+:::info
+This guide uses the term **HTTPS** to refer to both the **HTTP** and **HTTPS** protocols. This is because typically all traffic on a public network uses the secure HTTPS protocol.
+:::
+
+HTTPS outcalls provide the ability for different use cases and have several advantages compared to using oracles to handle external requests. Some of these are HTTPS outcalls use a stronger trust model since there are no external intermediaries, such as an oracle, required for the canister to communicate with external servers, and using HTTPS outcalls for communicating with external servers makes using canisters feel much closer to a "traditional" programming workflow that may not use blockchains or oracles. Most real-world dapps have a need for accessing data stored in off-chain entities, since most digital data is still stored in traditional, 'Web 2', services.
+
+## Supported HTTPS methods
+
+Currently, HTTPS outcalls support `GET`, `HEAD`, and `POST` methods for HTTPS requests. In this guide, you'll look at examples for `GET` and `POST` methods.
+
+## Cycles
+
+Cycles used to pay for an HTTPS call must be explicitly transferred with the call. They will not be automatically deducted from the caller's balance.
+
+## HTTPS outcalls API
+
+A canister can make an HTTPS outcall by using the `http_request` method. This method uses the following parameters:
+
+- `url`: Specifies the requested URL; must be valid per the standard [RFC-3986](https://www.ietf.org/rfc/rfc3986.txt). The length must not exceed `8192` and may include a custom port number.
+
+- `max_response_bytes`: Specifies the maximum size of the request in bytes and must not exceed 2MB. This field is optional; if this field is not specified, the maximum of 2MB will be used.
+
+:::info
+It is recommended to set `max_response_bytes`, since using it appropriately can save developers a significant amount of cycles.
+:::
+
+- `method`: Specifies the method; currently, only `GET`, `HEAD`, and `POST` are supported.
+
+- `headers`: Specifies the list of HTTP request headers and their corresponding values.
+
+- `body`: Specifies the content of the request's body. This field is optional.
+
+- `transform`: Specifies a function that transforms raw responses to sanitized responses, and a byte-encoded context that is provided to the function upon invocation, along with the response to be sanitized. This field is optional; if it is provided, the calling canister itself must export this function.
+
+The returned response, including the response to the `transform` function if specified, will contain the following content:
+
+- `status`: Specifies the response status (e.g., 200, 404).
+
+- `headers`: Specifies the list of HTTP response headers and their corresponding values.
+
+- `body`: Specifies the response's body.
+
+### IPv6
+
+When deploying applications to the Internet Computers, HTTPS outcalls can **only** be made to APIs that support **IPv6**. You can check if an API supports IPv6 by using a tool such as `https://ready.chair6.net/`.
+
+## HTTPS `GET`
+
+To demonstrate how to use the HTTPS `GET` outcall, you'll create a simple canister that has one route named `icp-price`. This route will trigger an HTTP `GET` request to the external service Coinmarketcap, which will return current data on the exchange rate between USD and ICP. This canister will have no frontend, and you will interact with its route via postman, insomnia, etc.
+
+### Prerequisites
+
+Before you start, verify that you have set up your developer environment according to the instructions in [3. Developer environment setup](/docs/developer-journey/level-0/dev-env).
+
+### Creating a new project
+
+To get started, create a new project in your working directory. Open a terminal window, then use the commands:
+
+import TabItem from "@theme/TabItem";
+
+<TabItem value="0-20-0" label="azle v0.20.0 or newer" default>
+
+Use `npx azle new <project_name>` to create a new project:
+
+```
+dfx start --clean --background
+npx azle new https_get
+```
+
+Then, navigate into the new project directory:
+
+```
+cd https_get
+```
+
+</TabItem>
+
+### Creating an HTTP `GET` request
+
+Then, open the `src/backend/index.ts` file in your code editor and replace the existing content with:
+
+```ts
+import { Server, query } from "azle";
+import { HttpResponse, HttpTransformArgs } from "azle/canisters/management";
+import express from "express";
+```
+
+This piece of code imports the libraries that you'll be using.
+
+Now let's insert the code to define our sever. This sever will contain two arguments; a function to transform the response that you'll receive from our `GET` response, and a function that contains our express logic. The code has been annotated with notes describing in detail what each piece does:
+
+```ts
+// Export a default Server component
+export default Server(
+  // Define a function that sets up an Express app
+  () => {
+    // Create an Express app instance
+    const app = express();
+
+    // Middleware to parse incoming JSON requests
+    app.use(express.json());
+
+    // Endpoint to handle POST requests to /icp-price
+    app.post("/icp-price", async (_req, res) => {
+      // Fetch the latest price of ICP from the CoinMarketCap API
+      const response = await fetch(
+        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=ICP&convert=USD`,
+        {
+          method: "GET",
+          headers: {
+            "X-CMC_PRO_API_KEY": "CoinMarketCap api key",
+          },
+        }
+      );
+
+      // Parse the response as JSON
+      const price = await response.json();
+
+      // Send back the price as JSON
+      res.json({ price: price.data.ICP.quote.USD.price });
+    });
+
+    // Start the Express app and listen for incoming connections
+    return app.listen();
+  },
+  {
+    // Define a transform function for HTTP responses
+    transform: query(
+      // Define the input parameters for the transform function
+      [HttpTransformArgs],
+      // Define the output type of the transform function
+      HttpResponse,
+      // Define the logic of the transform function
+      (httpTransformArgs: { response: any; context: any }) => {
+        return {
+          // Copy the original response object
+          ...httpTransformArgs.response,
+          // Remove headers from the response
+          headers: [],
+          // Set the response body to the context object
+          body: httpTransformArgs.context,
+        };
+      }
+    ),
+  }
+);
+```
+
+The code above is annotated with detailed notes and explanations. Take a moment to read through the code's content and annotations to fully understand the code's functionality.
+
+:::info
+The `POST` request on`/icp-price` is an update call. All methods that make HTTPS outcalls must be update calls because they go through consensus, even if the HTTPS outcall is a `GET`.
+:::
+
+### The `transform` function
+
+The `transform` function in the code above is important because it takes the raw content and transforms it into a raw HTTP payload. This step sets the payload's headers, which include the Content Security Policy and Strict Transport Security headers.
+
+When developing locally, this function doesn't have much of an effect since only the local replica (one node) is making the call.
+
+When HTTP calls are used on the mainnet, a common error message may appear that indicates not all replicas on the subnet get the same response:
+
+```
+Reject text: Canister http responses were different across replicas, and no consensus was reached
+```
+
+This error occurs when the replicas on the subnet don't all return the same value for a piece of data within the HTTP response. For example, if you have an application that sends an HTTP request to the Coinbase API for the current price of a token, due to latency the replicas will not all return the same response. To remedy this, you can request the token price for a specific timestamp to assure that the replicas all return the same response.
+
+Once you've inserted these snippets of code into the `src/backend/index.ts` file, save the file. The file should look like this:
+
+```ts
+import { Server, query } from "azle";
+import { HttpResponse, HttpTransformArgs } from "azle/canisters/management";
+import express from "express";
+
+export default Server(
+  () => {
+    const app = express();
+
+    app.use(express.json());
+
+    app.post("/icp-price", async (_req, res) => {
+      const response = await fetch(
+        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=ICP&convert=USD`,
+        {
+          method: "GET",
+          headers: {
+            "X-CMC_PRO_API_KEY": "CoinMarketCap api key",
+          },
+        }
+      );
+
+      const price = await response.json();
+      res.json({ price: price.data.ICP.quote.USD.price });
+    });
+
+    return app.listen();
+  },
+  {
+    transform: query(
+      [HttpTransformArgs],
+      HttpResponse,
+      (httpTransformArgs: { response: any; context: any }) => {
+        return {
+          ...httpTransformArgs.response,
+          headers: [],
+          body: httpTransformArgs.context,
+        };
+      }
+    ),
+  }
+);
+```
+
+Now, you can deploy the canister locally with the commands:
+
+```bash
+dfx start --clean --host 127.0.0.1:8000
+dfx deploy
+```
+
+:::caution
+Recall that if you'd like to deploy this canister on the mainnet, you can use the `--network ic` flag.
+:::
+
+These commands should return the canister's endpoint URL. Open the canister's endpoint URL would look like this:
+
+```bash
+http://bkyz2-fmaaa-aaaaa-qaaaq-cai.localhost:8000
+```
+
+## Need help?
+
+Did you get stuck somewhere in this tutorial, or feel like you need additional
+help understanding some of the concepts? The ICP community has several resources
+available for developers, like working groups and bootcamps, along with our
+Discord community, forum, and events such as hackathons. Here are a few to check
+out:
+
+- [Developer Discord community](https://discord.com/invite/cA7y6ezyE2), which is
+  a large chatroom for ICP developers to ask questions, get help, or chat with
+  other developers asynchronously via text chat.
+
+- [Developer journey forum discussion](https://forum.dfinity.org/t/developer-journey-feedback-and-discussion/23893).
+
+- [Developer tooling working group](https://www.google.com/calendar/event?eid=MHY0cjBubmlnYXY1cTkzZzVzcmozb3ZjZm5fMjAyMzEwMDVUMTcwMDAwWiBjX2Nnb2VxOTE3cnBlYXA3dnNlM2lzMWhsMzEwQGc&ctz=Europe/Zurich).
+
+- [Weekly developer office hours](https://discord.gg/4a7SZzRk?event=1164114241893187655)
+  to ask questions, get clarification, and chat with other developers live via
+  voice chat. This is hosted on our
+  [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
+
+- Submit your feedback to the [ICP Developer feedback board](http://dx.internetcomputer.org).
+
+## Next steps
+
+Next, let's dive deeper into certified variables:
+
+- [3.3 Certified variables](/docs/current/tutorials/developer-journey/level-3/3.3-certified-data).

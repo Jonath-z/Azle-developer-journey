@@ -28,11 +28,10 @@ The developer journey is designed to give both new and existing developers a cle
 
 ## Azle level 2: Advanced Integration and Security
 
-- **[1. Azle Package Managers:](/)** Explore package management in Azle to efficiently manage project dependencies.
-- **[2. HTTPS Outcalls:](/)** Implement HTTPS outcalls to interact with external services and APIs.
-- **[3. Managing Certified Data:](/)** Learn about certified data and how to ensure data authenticity and integrity.
-- **[4. Agent Interfaces:](/)** Introduction to agents in the Internet Computer environment and their role in application interactions.
-- **[5. Identities and Authentication:](/)** Implementing authentication mechanisms and managing identities within your applications.
+- **[1. HTTPS Outcalls:](/)** Implement HTTPS outcalls to interact with external services and APIs.
+- **[2. Managing Certified Data:](/)** Learn about certified data and how to ensure data authenticity and integrity.
+- **[3. Agent Interfaces:](/)** Introduction to agents in the Internet Computer environment and their role in application interactions.
+- **[4. Identities and Authentication:](/)** Implementing authentication mechanisms and managing identities within your applications.
 
 ## Azle level 3: Governance and Financial Operations
 
