@@ -1,0 +1,120 @@
+---
+keywords: [intermediate, tutorial, developer journey, certified data, certified variables]
+---
+
+
+# 2. Certified data
+
+
+## Overview
+
+In a previous module, [2. Advanced canister calls](/docs/developer-journey/level-1/advanced-canister-calls), you briefly touched on certified variables. In this guide, you'll dive deeper into certified data and take a look at an example that displays how to use certified data.
+
+Recall that certified variables are used as a way for queries to return an authenticated response that can be validated and trusted, since query calls do not go through consensus and therefore their response cannot be certified. By utilizing certified variables, developers can make query calls that return an authenticated response that they can trust. This allows for workflows that require additional layers of authentication, such as applications that handle financial data or important records. For users of the application, they can be assured that the information they're interacting with and receiving from the application is trustworthy and secure as well.
+
+Certified variables can be set within an update call to a canister, since an update call changes the canister's state and goes through the consensus process. Once a certified variable is set, the certification can be read in future query calls that return the certified variable in response to the query call in a trustworthy and secure way. Using this method, any application or client can immediately validate each certified variable that it receives from a query call without having to put trust into the single node that it received the response from.
+
+Certified variables are part of a more broad concept of **certified data.** Certified data utilizes **chain-key cryptography** at the canister level to generate a digital signature that can be validated using a permanent, public key that belongs to the Internet Computer, whose private key counterpart is constantly distributed across many different nodes on the network. A valid signature can only be generated when the majority of the nodes that store the components of the private key cooperate in a cryptographic protocol.
+
+## How data is certified
+
+The notion of certified data can be used to certify all the assets of a canister's frontend, such as the canister's HTML, CSS, Javascript, image, or video files. When a canister issues a response along with its certificate, a HTTPS gateway can be used to verify that certificate before passing the response off to the client.
+
+In each round of message execution on the Internet Computer, the message routing layer generates a new state tree that contains that round's information. The tree contains a root hash that is then used by the nodes in the subnet to create a certificate. This state tree contains several pieces of information, including the certified variables of each canister. An example of what a state tree looks like can be found below:
+
+```bash
+*root*
+└── canisters
+    ├── <canister id>
+              ├── metadata
+              ├── module_hash
+              ├── controllers
+              └── certified_data
+                          └── <blob data>
+    ├── <canister id>
+       ...
+```
+
+This example state tree highlights where the certified data is stored in the tree. Note that the certified data of a canister is limited to being 32 bytes long; if a canister needs to certify more than 32 bytes of information, the canister must hash the data before certifying it.
+
+### Data certificates
+
+A certificate for each piece of certified data consists of:
+
+- A certificate for the root hash of the state tree.
+
+- A Merkle proof that validates that the certified data belongs to a tree that hashes the root hash.
+
+## How canisters certify data
+
+To certify data, a canister uses the following workflow:
+
+- First, a canister must construct a hash tree that maps the paths of HTTPS resources to SHA0256 hashes. An example of this tree is:
+
+```bash
+*root*
+└── http_assets
+    ├── index.html -> SHA256(body)
+    ├── ...
+    └── /css/styles.css -> SHA256(body)
+```
+
+- Then, the canister computes the root hash of the tree and calls `ic0.certified_data_set` with the bytes of the hash as the argument.
+- Lastly, a [`#IC-Certificate`](https://wiki.internetcomputer.org/wiki/HTTP_asset_certification#IC-Certificate_header) header is added to each certified HTTP response.
+
+### Certified data API methods
+
+A canister can interact and change its certified data by calling the following API methods:
+
+- [`ic0.certified_data_set : (src: i32, size : i32) -> ()`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-certified-data): This method can be used to update the canister's certified data. Data cannot be larger than 32 bytes.
+
+- [`ic0.data_certificate_present : () -> i32`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-certified-data): This method returns a `1` if a certificate is present, or a `0` if not.
+
+- [`ic0.data_certificate_size : () -> i32`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-certified-data) and [`ic0.data_certificate_copy : (dst: i32, offset: i32, size: i32) -> ()`](https://internetcomputer.org/docs/current/references/ic-interface-spec/#system-api-certified-data): These methods are used to copy the certificate for the current value of the certified data to the canister.
+
+In Azle, you can use the [`ic.dataCertificate()`](https://demergent-labs.github.io/azle/reference/canister_apis/data_certificate.html) method to retrieve the data certificate that authenticates the certified data set by the canister. This method is used within a query call and returns the data certificate. If it's not called from a query call, it returns `None`.
+
+```ts
+import { blob, Canister, ic, Opt, query } from 'azle';
+
+export default Canister({
+    // When called from a query call, returns the data certificate
+    // authenticating certified_data set by this canister. Returns None if not
+    // called from a query call.
+    dataCertificate: query([], Opt(blob), () => {
+        return ic.dataCertificate();
+    })
+});
+
+
+```
+
+
+## Need help?
+
+Did you get stuck somewhere in this tutorial, or feel like you need additional
+help understanding some of the concepts? The ICP community has several resources
+available for developers, like working groups and bootcamps, along with our
+Discord community, forum, and events such as hackathons. Here are a few to check
+out:
+
+- [Developer Discord community](https://discord.com/invite/cA7y6ezyE2), which is
+  a large chatroom for ICP developers to ask questions, get help, or chat with
+  other developers asynchronously via text chat.
+
+- [Developer journey forum discussion](https://forum.dfinity.org/t/developer-journey-feedback-and-discussion/23893).
+
+- [Developer tooling working group](https://www.google.com/calendar/event?eid=MHY0cjBubmlnYXY1cTkzZzVzcmozb3ZjZm5fMjAyMzEwMDVUMTcwMDAwWiBjX2Nnb2VxOTE3cnBlYXA3dnNlM2lzMWhsMzEwQGc&ctz=Europe/Zurich).
+
+- [Weekly developer office hours](https://discord.gg/4a7SZzRk?event=1164114241893187655)
+  to ask questions, get clarification, and chat with other developers live via
+  voice chat. This is hosted on our
+  [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
+
+- Submit your feedback to the [ICP Developer feedback board](http://dx.internetcomputer.org).
+
+## Next steps
+
+Next, let's dive deeper into certified variables:
+
+- [3. Introduction to agents](/docs/developer-journey/level-2/agent-interfaces).
