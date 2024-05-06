@@ -56,7 +56,7 @@ When deploying applications to the Internet Computers, HTTPS outcalls can **only
 
 ## HTTPS `GET`
 
-To demonstrate how to use the HTTPS `GET` outcall, you'll create a simple canister that has one route named `icp-price`. This route will trigger an HTTP `GET` request to the external service Coinmarketcap, which will return current data on the exchange rate between USD and ICP. This canister will have no frontend, and you will interact with its route via postman, insomnia, etc.
+To demonstrate how to use the HTTPS `GET` outcall, you'll create a simple canister that has one route named `icp-price`. This route will trigger an HTTP `GET` request to the external service CoinMarketCap, which will return current data on the exchange rate between USD and ICP. This canister will have no frontend, and you will interact with its route via postman, insomnia, etc.
 
 ### Prerequisites
 
@@ -174,7 +174,7 @@ When HTTP calls are used on the mainnet, a common error message may appear that 
 Reject text: Canister http responses were different across replicas, and no consensus was reached
 ```
 
-This error occurs when the replicas on the subnet don't all return the same value for a piece of data within the HTTP response. For example, if you have an application that sends an HTTP request to the Coinbase API for the current price of a token, due to latency the replicas will not all return the same response. To remedy this, you can request the token price for a specific timestamp to assure that the replicas all return the same response.
+This error occurs when the replicas on the subnet don't all return the same value for a piece of data within the HTTP response. For example, if you have an application that sends an HTTP request to the CoinMarketCap API for the current price of a token, due to latency the replicas will not all return the same response. To remedy this, you can request the token price for a specific timestamp to assure that the replicas all return the same response.
 
 Once you've inserted these snippets of code into the `src/backend/index.ts` file, save the file. The file should look like this:
 
