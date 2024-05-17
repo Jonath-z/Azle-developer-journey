@@ -10,7 +10,7 @@ When you have a canister running, either locally or on the mainnet, you have two
 
 ### Structuring data
 
-One of the first responsibilities of an agent is to structure data. As was discussed in previous modules, such as [2.2: Advanced canister calls](/docs/current/tutorials/developer-journey/level-2/2.2-advanced-canister-calls), calls to ICP can be an update or a query call. An agent submits a `POST` request to the canister's API at the URL `/api/v2/canister/<effective_canister_id>/call`. This post request contains the following components:
+One of the first responsibilities of an agent is to structure data. As was discussed in previous modules, such as [2. Advanced canister calls](/docs/developer-journey/level-1/2-advanced-canister-calls.mdx), calls to ICP can be an update or a query call. An agent submits a `POST` request to the canister's API at the URL `/api/v2/canister/<effective_canister_id>/call`. This post request contains the following components:
 
 - `request_type`.
 - Authentication, comprised of the `sender`, `nonce`, and `ingress_expiry`.
@@ -45,7 +45,7 @@ When an agent encodes these identities as a principal, they attach a suffix byte
 
 ## Available agents
 
-Currently, there are two agents developed by DFINITY: the [JavaScript/TypeScript](/docs/current/developer-docs/agents/javascript-intro) agent, and the [Rust](/docs/current/developer-docs/agents/ic-agent-dfinity) agent.
+Currently, there are two agents developed by DFINITY: the JavaScript/TypeScript agent, and the Rust agent.
 
 Additionally, there are several community-supported agents, including:
 
