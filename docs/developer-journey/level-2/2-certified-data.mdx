@@ -1,12 +1,15 @@
 ---
-keywords: [intermediate, tutorial, developer journey, certified data, certified variables]
+keywords:
+  [
+    intermediate,
+    tutorial,
+    developer journey,
+    certified data,
+    certified variables,
+  ]
 ---
 
-
 # 2. Certified data
-
-
-## Overview
 
 In a previous module, [2. Advanced canister calls](/docs/developer-journey/level-1/advanced-canister-calls), you briefly touched on certified variables. In this guide, you'll dive deeper into certified data and take a look at an example that displays how to use certified data.
 
@@ -75,20 +78,17 @@ A canister can interact and change its certified data by calling the following A
 In Azle, you can use the [`ic.dataCertificate()`](https://demergent-labs.github.io/azle/reference/canister_apis/data_certificate.html) method to retrieve the data certificate that authenticates the certified data set by the canister. This method is used within a query call and returns the data certificate. If it's not called from a query call, it returns `None`.
 
 ```ts
-import { blob, Canister, ic, Opt, query } from 'azle';
+import { blob, Canister, ic, Opt, query } from "azle";
 
 export default Canister({
-    // When called from a query call, returns the data certificate
-    // authenticating certified_data set by this canister. Returns None if not
-    // called from a query call.
-    dataCertificate: query([], Opt(blob), () => {
-        return ic.dataCertificate();
-    })
+  // When called from a query call, returns the data certificate
+  // authenticating certified_data set by this canister. Returns None if not
+  // called from a query call.
+  dataCertificate: query([], Opt(blob), () => {
+    return ic.dataCertificate();
+  }),
 });
-
-
 ```
-
 
 ## Need help?
 
