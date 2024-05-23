@@ -2,9 +2,7 @@
 keywords: [advanced, tutorial, developer journey, icrc tokens, icrc ledger]
 ---
 
-
 # 2. ICRC-1 tokens
-
 
 For developers to create their own fungible tokens on the Internet Computer, the ICRC-1 token standard can be used. The acronym "ICRC" stands for "Internet Computer Request for Comments", as the standard was created by the Internet Computer working group. [Learn more about the working group](https://github.com/dfinity/ICRC).
 
@@ -35,14 +33,14 @@ ICRC-1 `Account` Definition
 type Subaccount = Uint8Array;
 
 type Account = {
-    owner: Principal;
-    subaccount?: Subaccount;
+  owner: Principal,
+  subaccount?: Subaccount,
 };
 
 // Example usage
 const exampleAccount: Account = {
-    owner: Principal.fromText("aaaaa-aa"),
-    subaccount: new Uint8Array([0, 1, 2, 3])
+  owner: Principal.fromText("aaaaa-aa"),
+  subaccount: new Uint8Array([0, 1, 2, 3]),
 };
 ```
 
@@ -54,13 +52,16 @@ type AccountIdentifier = string;
 
 // Function to convert an ICRC-1 Account to an AccountIdentifier
 function accountToIdentifier(account: Account): AccountIdentifier {
-    // This is a simplified example. The actual conversion involves hashing.
-    const subaccountHex = account.subaccount ? Buffer.from(account.subaccount).toString('hex') : '';
-    return `${account.owner.toText()}${subaccountHex}`;
+  // This is a simplified example. The actual conversion involves hashing.
+  const subaccountHex = account.subaccount
+    ? Buffer.from(account.subaccount).toString("hex")
+    : "";
+  return `${account.owner.toText()}${subaccountHex}`;
 }
 
 // Example usage
-const exampleAccountIdentifier: AccountIdentifier = accountToIdentifier(exampleAccount);
+const exampleAccountIdentifier: AccountIdentifier =
+  accountToIdentifier(exampleAccount);
 console.log(exampleAccountIdentifier); // Outputs the hashed identifier
 ```
 
@@ -71,8 +72,6 @@ Key differences
 - **Usage**: `Account` provides more detailed account management, whereas `AccountIdentifier` offers a simpler, more anonymous representation.
 
 for more details, you can refer to the [ICRC-1 repository](https://github.com/demergent-labs/ICRC-1).
-
-
 
 ### Endpoints
 
@@ -88,8 +87,6 @@ On the mainnet, the ICP index canister runs on the NNS subnet and has the canist
 
 There are several ICRC-1 compatible ledgers, and in turn several ICRC-1 index canisters. One example is the ICRC-1 ledger for ckBTC transactions, which has the canister ID [n5wcd-faaaa-aaaar-qaaea-cai](https://dashboard.internetcomputer.org/canister/n5wcd-faaaa-aaaar-qaaea-cai).
 
-
-
 ## Extensions of the standard
 
 The ICRC-1 standard intentionally excludes certain ledger functions that are necessary for building diverse DeFi applications, such as:
@@ -102,7 +99,6 @@ The ICRC-1 standard intentionally excludes certain ledger functions that are nec
 
 The ICRC-1 standard defines the `icrc1_supported_standards` endpoint to accommodate these functions through extensions of the standard. This endpoint returns all specifications implemented by the ledger, such as `ICRC-2` or `DIP-20`.
 
-
 ## Metadata
 
 The ICRC-1 token standard allows for several optional metadata fields to be specified. Metadata can be used to help improve the user experience and simplify the token's integration with wallets. Each metadata key is an arbitrary Unicode string that uses the format `<namespace>:<key>`, where the namespace `icrc1` is reserved for metadata defined for the ICRC-1 standard.
@@ -111,26 +107,23 @@ Common Metadata Fields
 
 - `icrc1:symbol:` The token's currency code.
 
-    **Example:** ` variant { Text = "XTKN" } `
+  **Example:** `variant { Text = "XTKN" }`
 
 - `icrc1:name:` The token's name.
 
-    **Example:** `variant { Text = "Test Token" }`
+  **Example:** `variant { Text = "Test Token" }`
 
 - `icrc1:decimals:` The number of decimals used by the token.
 
-    **Example:**  `variant { Nat = 8 }`
+  **Example:** `variant { Nat = 8 }`
 
 - `icrc1:fee:` The token's default transfer fee.
 
-    **Example:** `variant { Nat = 10_000 }` 
-
-
+  **Example:** `variant { Nat = 10_000 }`
 
 ## Deploying a ICRC-1 ledger locally
 
 Deploying an ICRC-1 ledger canister locally uses the same steps that you used in the last module to deploy the local ICP canister, but you'll use different Wasm and Candid files.
-
 
 ### Prerequisites
 
@@ -162,8 +155,6 @@ npm install
   </TabItem>
 </Tabs>
 
-
-
 ### Locating the Wasm and Candid files
 
 You can access the Wasm and Candid files in the same way that you located the ICP ledger files. Remember that you'll need the latest replica version, which can be found on the [dashboard](https://dashboard.internetcomputer.org/releases) under the **Elect new replica binary revision** field.
@@ -180,7 +171,7 @@ Open the `dfx.json` file in the project's directory and replace the existing con
     "icrc1_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/d87954601e4b22972899e9957e800406a0a6b929/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/d87954601e4b22972899e9957e800406a0a6b929/canisters/ic-icrc1-ledger.wasm.gz",
+      "wasm": "https://download.dfinity.systems/ic/d87954601e4b22972899e9957e800406a0a6b929/canisters/ic-icrc1-ledger.wasm.gz"
     }
   },
   "defaults": {
@@ -289,7 +280,6 @@ record {
 Specifying the canister ID as `mxzaz-hqaaa-aaaar-qaada-cai` is an optional step that is used in this tutorial for consistency.
 :::
 
-
 ### Deploying a ICRC-1 ledger on the mainnet
 
 To deploy an instance of the ICRC-1 ledger on the mainnet, there are several important things to note:
@@ -303,8 +293,6 @@ To deploy an instance of the ICRC-1 ledger on the mainnet, there are several imp
 - Always set the `archive_options` field, otherwise the ledger's capacity is limited to the memory of a single canister.
 
 - Assure that the ledger canister has sufficient cycles, since it will require cycles to create new instances of the archive canister on demand.
-
-
 
 ## Interacting with the ICRC-1 ledger
 
@@ -336,7 +324,6 @@ This should return the following output:
   },
 )
 ```
-
 
 To get the token symbol of the ICRC-1 ledger, use the command:
 
@@ -447,9 +434,7 @@ This command uses the `DEPLOY_ID` account principal to transfer 10_000 tokens. T
 (variant { Ok = 1 : nat })
 ```
 
-
 ### Using ICRC-2 endpoints
-
 
 The [ICRC-2 standard](https://github.com/dfinity/ICRC-1/blob/main/standards/ICRC-2/README.md) enables the approve-transfer-from pattern that became popular in the Ethereum ecosystem with the ERC-20 token standard. It specifies a way for an account owner to delegate token transfers to a third party, usually a canister, on the owner's behalf.
 
@@ -505,8 +490,6 @@ This URL will display the following Candid UI:
 
 - [ledger-icrc-js](https://github.com/dfinity/ic-js/tree/main/packages/ledger-icrc).
 
- 
-
 ## Need help?
 
 Did you get stuck somewhere in this tutorial, or feel like you need additional
@@ -529,8 +512,6 @@ out:
   [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
 
 - Submit your feedback to the [ICP Developer feedback board](http://dx.internetcomputer.org).
-
-
 
 ## Next steps
 
