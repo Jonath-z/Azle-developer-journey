@@ -1,0 +1,264 @@
+---
+keywords: [advanced, tutorial, developer journey, icp eth, ethereum]
+---
+
+# Deploying an ETH starter project on ICP
+
+As you explored in a previous tutorial, the Internet Computer is integrated with the Bitcoin network, allowing for smart contracts to seamlessly communicate from ICP to Bitcoin for multi-chain functionality. The ICP ETH native integration is currently in development, and will include extensive capabilities for Ethereum dapps and tokens on ICP. For example, ICP ETH integration will include capabilities such as interacting with Ethereum smart contracts from canisters on ICP, creating ckETH and ckERC-20 tokens, which can be swapped with negligible fees. Furthermore, the Bitfinity EVM allows deploying Ethereum smart contracts on ICP.
+
+These capabilities will be enabled through a protocol-level ETH integration, which will initially use HTTPS outcalls to interact with Ethereum APIs to securely query and send transactions to the Ethereum network. These HTTPS outcalls will eventually be replaced by an on-chain Ethereum API on ICP, made possible by running full Ethereum nodes on each ICP replica.
+
+Through ICP's chain-key cryptography feature, the ETH integration will include chain-key tokens, similar to the design of ckBTC. The ETH integration will expand the possibilities of chain-key tokens to include ckETH and ckERC-20 tokens, including ckUSDC and ckUSDT. Lastly, the ETH integration will provide developers the ability to run existing Solidity code and dapps on ICP through an on-chain EVM solution.
+
+:::caution
+As mentioned, the ICP ETH integration is still in development. In the future, a there will be an additional variation of this developer journey series that focuses solely on Ethereum development on ICP.
+:::
+
+For this tutorial, a sample boilerplate project will be explored that showcases the basis of the ICP ETH integration, which uses HTTPS outcalls to query information from the Ethereum network.
+
+## Deploying the ETH starter project
+
+In this tutorial, you'll use the DFINITY ICP ETH starter project to deploy a boilerplate dapp that showcases how ICP can query information from the Ethereum network using HTTPS outcalls. This starter dapp is used to verify the ownership of NFTs minted on the Ethereum network, and supports queries to the Ethereum mainnet and the Sepolia and Goerli test networks.
+
+### Project technology stack
+
+This starter project is comprised of one server canister and frontend canister which we are not going to use in this tutorial, the server canister implements an express application with the following routes:
+
+- `/caller-address`: create an ethereum wallet from the `ic` caller principal
+- `/canister-address`: create an ethereum wallet from the `ic` canister id
+- `/address-balance`: get the balance of the wallet address using ethereum Sepolia RPC provider
+- `/transfer-from-sepolia-faucet-wallet`: transfer ETH tokens from the sepolia faucet to a wallet address
+
+We'll dive deeper into the project's files in the [exploring the project's files](#exploring-the-projects-files) section below.
+
+### Prerequisites
+
+Before you start, verify that you have set up your developer environment according to the instructions in [3. Developer environment setup](/docs/developer-journey/level-0/3-dev-env.mdx).
+
+### Downloading the starter project's files
+
+To get started, open a new terminal window, navigate into your working directory (`developer_journey`), then use the following commands start a new azle project
+
+```bash
+npx azle new ethers_base
+```
+
+Then copy the code from this file `https://github.com/demergent-labs/azle/blob/main/examples/ethers_base/src/server.ts` and past it in `./src/backend/index.ts`
+
+### Exploring the project's files
+
+First, let's start by looking at the contents of the project's `dfx.json` file. This file will contain the following:
+
+```json
+{
+  "canisters": {
+    "backend": {
+      "type": "custom",
+      "main": "src/backend/index.ts",
+      "candid": "src/backend/index.did",
+      "candid_gen": "http",
+      "build": "npx azle backend",
+      "wasm": ".azle/backend/backend.wasm",
+      "gzip": true,
+      "assets": [["src/frontend/dist", "dist"]],
+      "build_assets": "npm run build",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "path": "src/backend/index.did"
+        },
+        {
+          "name": "cdk:name",
+          "content": "azle"
+        }
+      ]
+    }
+  }
+}
+```
+
+In this file, you can see the definitions for the project's canister:
+
+- `backend`: The dapp's backend canister, which has type "custom" since it uses TypeScript (Azle) source code stored in the file `src/backend/index.ts`. This canister has the frontend code as assets in `src/frontend/dist`.
+
+Next, let's take a look at the source code for the backend canister. Open the `src/backend/index.ts` file, which will contain the following content. This code has been annotated with notes to explain the code's logic:
+
+```TypeScript
+// Import required modules and functions from external libraries
+import { ic, jsonStringify, ThresholdWallet } from "azle";
+import { ethers } from "ethers";
+import express, { Request } from "express";
+
+// Initialize an Express application
+const app = express();
+
+// Middleware to parse incoming JSON requests
+app.use(express.json());
+
+// Route to get the address of the caller using a ThresholdWallet
+app.post("/caller-address", async (_req, res) => {
+  // Create a ThresholdWallet using the caller's address derived from the Internet Computer (IC) context
+  const wallet = new ThresholdWallet(
+    {
+      derivationPath: [ic.caller().toUint8Array()],
+    },
+    // Use the Sepolia Ethereum test network provider
+    ethers.getDefaultProvider("https://sepolia.base.org")
+  );
+
+  // Send the derived address as a response
+  res.send(await wallet.getAddress());
+});
+
+// Route to get the address of the canister using a ThresholdWallet
+app.post("/canister-address", async (_req, res) => {
+  // Create a ThresholdWallet using the canister's ID derived from the Internet Computer (IC) context
+  const wallet = new ThresholdWallet(
+    {
+      derivationPath: [ic.id().toUint8Array()],
+    },
+    // Use the Sepolia Ethereum test network provider
+    ethers.getDefaultProvider("https://sepolia.base.org")
+  );
+
+  // Send the derived address as a response
+  res.send(await wallet.getAddress());
+});
+
+// Route to get the balance of a given address on the Sepolia network
+app.post(
+  "/address-balance",
+  async (req: Request<any, any, { address: string }>, res) => {
+    // Fetch the balance of the provided address from the Sepolia network
+    const balance = await ethers
+      .getDefaultProvider("https://sepolia.base.org")
+      .getBalance(req.body.address);
+
+    // Send the balance as a JSON response
+    res.send(jsonStringify(balance));
+  }
+);
+
+// Route to transfer Ether from a predefined Sepolia faucet wallet
+app.post(
+  "/transfer-from-sepolia-faucet-wallet",
+  async (req: Request<any, any, { to: string; value: string }>, res) => {
+    // Predefined wallet address: 0x9Ac70EE21bE697173b74aF64399d850038697FD3
+    // Create a wallet instance using a private key and the Sepolia network provider
+    const wallet = new ethers.Wallet(
+      "0x6f784763681eb712dc16714b8ade23f6c982a5872d054059dd64d0ec4e52be33",
+      ethers.getDefaultProvider("https://sepolia.base.org")
+    );
+
+    // Get the recipient address and transfer value from the request body
+    const to = req.body.to;
+    const value = ethers.parseEther(req.body.value);
+    const gasLimit = 21_000n;
+
+    // Create and send a transaction with the specified parameters
+    const tx = await wallet.sendTransaction({
+      to,
+      value,
+      gasLimit,
+    });
+
+    // Send the transaction hash as a response
+    res.send(`transaction sent with hash: ${tx.hash}`);
+  }
+);
+
+// Route to transfer Ether from a canister-controlled wallet
+app.post(
+  "/transfer-from-canister",
+  async (req: Request<any, any, { to: string; value: string }>, res) => {
+    // Create a ThresholdWallet using the canister's ID derived from the Internet Computer (IC) context
+    const wallet = new ThresholdWallet(
+      {
+        derivationPath: [ic.id().toUint8Array()],
+      },
+      // Use the Sepolia Ethereum test network provider
+      ethers.getDefaultProvider("https://sepolia.base.org")
+    );
+
+    // Get the recipient address and transfer value from the request body
+    const to = req.body.to;
+    const value = ethers.parseEther(req.body.value);
+    const gasLimit = 21_000n;
+
+    // Create and send a transaction with the specified parameters
+    const tx = await wallet.sendTransaction({
+      to,
+      value,
+      gasLimit,
+    });
+
+    // Send the transaction hash as a response
+    res.send(`transaction sent with hash: ${tx.hash}`);
+  }
+);
+
+// Start the Express application to listen for incoming requests
+app.listen();
+
+```
+
+### Deploying the project
+
+Now hat you have the code ready, it's time to deploy your ICP ETH starter project. To do this, first assure that a local replica is running:
+
+```bash
+dfx start --clean --host 127.0.0.1:8000
+```
+
+Install the program's packages, and deploy the canisters with the command:
+
+```bash
+npm i && dfx deploy
+```
+
+This command will give a local url that can be used in postman to test the server:
+
+```bash
+http://bkyz2-fmaaa-aaaaa-qaaaq-cai.localhost:8000
+```
+
+:::info
+In this tutorial, you deployed this starter dapp locally. To deploy this dapp on the mainnet, run `dfx deploy --network ic`.
+:::
+
+## Going further
+
+Since this dapp is designed as a starter boilerplate, it is highly encouraged to build off of this template to develop your own ICP ETH dapp. Here are some tips and tricks to help you get started:
+
+- Customize your project's code style by editing the `.prettierrc` file and then running `npm run format`.
+
+- Reduce the latency of update calls by passing the `--emulator` flag to `dfx start`.
+
+- Implement a better frontend with React and Vite.
+
+## Resources
+
+[View the full Github repository for this starter project](https://github.com/Jonath-z/icp-eth-account-abstraction-demo).
+[View the full GitHub repository for Azle examples](https://github.com/demergent-labs/azle/tree/main/examples).
+
+## Need help?
+
+## Need help?
+
+Did you get stuck somewhere in this tutorial, or feel like you need additional help understanding some of the concepts? The ICP community has several resources
+available for developers, like working groups and bootcamps, along with our
+Discord community, forum, and events such as hackathons. Here are a few to check
+out:
+
+- [Developer Discord community](https://discord.com/invite/cA7y6ezyE2), which is
+  a large chatroom for ICP developers to ask questions, get help, or chat with
+  other developers asynchronously via text chat.
+
+- [Developer journey forum discussion](https://forum.dfinity.org/t/developer-journey-feedback-and-discussion/23893).
+
+- [Developer tooling working group](https://www.google.com/calendar/event?eid=MHY0cjBubmlnYXY1cTkzZzVzcmozb3ZjZm5fMjAyMzEwMDVUMTcwMDAwWiBjX2Nnb2VxOTE3cnBlYXA3dnNlM2lzMWhsMzEwQGc&ctz=Europe/Zurich).
+
+- [Weekly developer office hours](https://discord.gg/4a7SZzRk?event=1164114241893187655)
+  to ask questions, get clarification, and chat with other developers live via
+  voice chat. This is hosted on our
+  [developer Discord](https://discord.com/invite/cA7y6ezyE2) group.
