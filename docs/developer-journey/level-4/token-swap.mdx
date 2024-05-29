@@ -448,7 +448,7 @@ export TOKEN_B=$(dfx canister id token_b)
 
 ### Deploying the swap canister
 
-Then it's time to deploy the swap/backend canister. Use the following command, which deploys and calls the initialize function of the backend canister:
+Then it's time to deploy the backend canister. Use the following command, which deploys and calls the initialize function of the backend canister:
 
 ```bash
 dfx deploy backend
@@ -461,15 +461,15 @@ dfx canister call backend initialize '
 '
 ```
 
-Then, export the canister ID of the swap canister as an environmental variable:
+Then, export the canister ID of the backend canister as an environmental variable:
 
 ```bash
 export SWAP=$(dfx canister id backend)
 ```
 
-### Depositing tokens into the swap canister
+### Depositing tokens into the backend canister
 
-Before tokens can be swapped, they must be transferred into the swap canister. Since the tokens in this example uses ICRC-2 tokens, this is a two-step process. First, the transfer must be approved. In this example, approve `user_a` to deposit 1.00000000 of `token_a`, and include 0.0001 extra for the transfer fee:
+Before tokens can be swapped, they must be transferred into the backend canister. Since the tokens in this example uses ICRC-2 tokens, this is a two-step process. First, the transfer must be approved. In this example, approve `user_a` to deposit 1.00000000 of `token_a`, and include 0.0001 extra for the transfer fee:
 
 ```bash
 dfx canister call --identity user_a token_a icrc2_approve '
@@ -533,7 +533,7 @@ dfx canister call --identity user_b backend deposit 'record {
 
 ### Performing a token swap
 
-Now that both users have deposited their tokens into the swap canister, a token swap can be performed by calling the swap canister's `swap` method:
+Now that both users have deposited their tokens into the backend canister, a token swap can be performed by calling the backend canister's `swap` method:
 
 ```bash
 dfx canister call backend swap 'record {
