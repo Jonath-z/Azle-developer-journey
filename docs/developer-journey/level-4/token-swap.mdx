@@ -448,7 +448,7 @@ export TOKEN_B=$(dfx canister id token_b)
 
 ### Deploying the swap canister
 
-Then its time to deploy the swap canister. Use the following command, which passes the canister IDs for the token canisters as arguments to the swap canister:
+Then it's time to deploy the swap/backend canister. Use the following command, which deploys and calls the initialize function of the backend canister:
 
 ```bash
 dfx deploy backend
