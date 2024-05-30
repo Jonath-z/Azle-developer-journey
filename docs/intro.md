@@ -28,23 +28,21 @@ The developer journey is designed to give both new and existing developers a cle
 
 ## Azle level 2: Advanced Integration and Security
 
-- **[1. HTTPS Outcalls:](/)** Implement HTTPS outcalls to interact with external services and APIs.
-- **[2. Managing Certified Data:](/)** Learn about certified data and how to ensure data authenticity and integrity.
-- **[3. Agent Interfaces:](/)** Introduction to agents in the Internet Computer environment and their role in application interactions.
-- **[4. Identities and Authentication:](/)** Implementing authentication mechanisms and managing identities within your applications.
+- **[1. HTTPS Outcalls:](/docs/developer-journey/level-2/1-http-out-calls.mdx)** Implement HTTPS outcalls to interact with external services and APIs.
+- **[2. Managing Certified Data:](/docs/developer-journey/level-2/2-certified-data.mdx)** Learn about certified data and how to ensure data authenticity and integrity.
+- **[3. Agent Interfaces:](/docs/developer-journey/level-2/3-agent-interfaces.mdx)** Introduction to agents in the Internet Computer environment and their role in application interactions.
+- **[4. Identities and Authentication:](/docs/developer-journey/level-2/4-identities-and-auth.mdx)** Implementing authentication mechanisms and managing identities within your applications.
 
 ## Azle level 3: Governance and Financial Operations
 
-- **[1. ICP Ledger Operations:](/)** Learn to interact with the ICP ledger for managing tokens and transactions.
-- **[2. Implementing ICRC-1 Tokens:](/)** Understand the framework and deployment of ICRC-1 tokens on the Internet Computer.
-- **[3. Integration with Bitcoin:](/)** Explore the ckBTC and other Bitcoin integration tools within the Internet Computer.
-- **[4. NNS Governance and Staking:](/)** Master the nuances of network governance and the staking process in the NNS.
-- **[5. Using Quill for Transaction Management:](/)** Get hands-on experience with Quill to manage ICP transactions and staking.
+- **[1. ICP Ledger Operations:](/docs/developer-journey/level-3/1-ledger.mdx)** Learn to interact with the ICP ledger for managing tokens and transactions.
+- **[2. Implementing ICRC-1 Tokens:](/docs/developer-journey/level-3/2-icrc-tokens.mdx)** Understand the framework and deployment of ICRC-1 tokens on the Internet Computer.
+- **[3. Integration with Bitcoin:](/docs/developer-journey/level-3/3-bitcoin.mdx)** Explore the ckBTC and other Bitcoin integration tools within the Internet Computer.
+- **[4. NNS Governance and Staking:](/docs/developer-journey/level-3/4-nns-and-staking.mdx)** Master the nuances of network governance and the staking process in the NNS.
+- **[5. Using Quill for Transaction Management:](/docs/developer-journey/level-3/5-using-quill.mdx)** Get hands-on experience with Quill to manage ICP transactions and staking.
 
 ## Azle level 4: Building Decentralized Applications (DApps)
 
-- **[1. Encrypted Notes DApp with VetKeys:](/)** Build an encrypted notes application using the vetKeys library.
-- **[2. Ethereum Integration DApp Development:](/)** Develop a decentralized application utilizing the ICP-Ethereum integration.
-- **[3. Decentralized Token Swap Implementation:](/)** Create and launch a decentralized token swapping platform.
-- **[4. NFT Development on ICP:](/)** Learn the process of creating and managing Non-Fungible Tokens (NFTs) on the Internet Computer.
-- **[5. Auction DApp Creation:](/)** Design and develop a decentralized auction platform using the Internet Computer.
+- **[1. Ethereum Integration DApp Development:](/docs/developer-journey/level-4/1-ICP-ETH-tutorial.mdx)** Develop a decentralized application utilizing the ICP-Ethereum integration.
+- **[2. Decentralized Token Swap Implementation:](/docs/developer-journey/level-4/2-token-swap.mdx)** Create and launch a decentralized token swapping platform.
+- **[3. NFT Development on ICP:](/docs/developer-journey/level-4/3-NFT-tutorial.mdx)** Learn the process of creating and managing Non-Fungible Tokens (NFTs) on the Internet Computer.
